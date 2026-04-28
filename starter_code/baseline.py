@@ -24,7 +24,15 @@ le = LabelEncoder()
 y_encoded = le.fit_transform(y_train)
 
 # ── Train Baseline Model ───────────────────────────────────────────────────────
-model = RandomForestClassifier(n_estimators=100, random_state=42)
+from sklearn.ensemble import GradientBoostingClassifier
+
+model = GradientBoostingClassifier(
+    n_estimators=200,
+    learning_rate=0.05,
+    max_depth=5,
+    random_state=42
+)
+
 model.fit(X_train, y_encoded)
 
 # ── Save Model ─────────────────────────────────────────────────────────────────
@@ -38,6 +46,6 @@ pred_labels  = le.inverse_transform(preds)
 
 submission = pd.DataFrame({"id": test["id"], "crime_type": pred_labels})
 os.makedirs("../submission", exist_ok=True)
-submission.to_csv("../submission/aayushi.csv", index=False)
-print("✅ Baseline submission saved to submission/aayushi.csv")
+submission.to_csv("../submission/submission.csv", index=False)
+print("✅ Baseline submission saved to submission/submission.csv")
 print(submission)
