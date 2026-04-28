@@ -1,2 +1,5 @@
-pandas
+ppandas
 scikit-learn
+joblib
+numpy
+matplotlib
