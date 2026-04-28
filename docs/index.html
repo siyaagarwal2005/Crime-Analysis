@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🚔 Crime Analysis - Leaderboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0d1117; color: #c9d1d9; margin: 0; padding: 30px; }
+    h1   { text-align: center; color: #58a6ff; }
+    p.subtitle { text-align: center; color: #8b949e; margin-top: -10px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+    th { background: #161b22; color: #58a6ff; padding: 12px; border: 1px solid #30363d; }
+    td { padding: 10px; border: 1px solid #30363d; text-align: center; }
+    tr:nth-child(even) { background: #161b22; }
+    tr:nth-child(odd)  { background: #0d1117; }
+    tr:first-child td  { font-weight: bold; color: #ffd700; }
+    .medal { font-size: 1.2em; }
+    .empty { text-align: center; color: #8b949e; margin-top: 40px; font-size: 1.1em; }
+    footer { text-align: center; margin-top: 40px; color: #8b949e; font-size: 0.85em; }
+  </style>
+</head>
+<body>
+  <h1>🚔 Crime Analysis ML — Leaderboard</h1>
+  <p class="subtitle">Ranked by Accuracy on the hidden test set</p>
+
+  <div id="content"></div>
+
+  <footer>Auto-updated via GitHub Actions · Crime Analysis ML Competition</footer>
+
+  <script>
+    const medals = ["🥇", "🥈", "🥉"];
+    fetch("leaderboard.json")
+      .then(r => r.json())
+      .then(data => {
+        const container = document.getElementById("content");
+        if (!data || data.length === 0) {
+          container.innerHTML = "<p class='empty'>🏁 No submissions yet. Be the first to submit!</p>";
+          return;
+        }
+        let rows = "";
+        data.forEach((row, i) => {
+          const rank = medals[i] || (i + 1);
+          const ts   = new Date(row.timestamp).toLocaleString();
+          rows += `
+            <tr>
+              <td class="medal">${rank}</td>
+              <td>${row.name}</td>
+              <td>${(row.accuracy * 100).toFixed(2)}%</td>
+              <td>${(row.f1_score * 100).toFixed(2)}%</td>
+              <td>${ts}</td>
+            </tr>`;
+        });
+        container.innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Name</th>
+                <th>Accuracy</th>
+                <th>F1 Score</th>
+                <th>Submitted At</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>`;
+      })
+      .catch(() => {
+        document.getElementById("content").innerHTML =
+          "<p class='empty'>⚠️ Could not load leaderboard.</p>";
+      });
+  </script>
+</body>
+</html>
