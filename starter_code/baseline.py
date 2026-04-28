@@ -38,6 +38,6 @@ pred_labels  = le.inverse_transform(preds)
 
 submission = pd.DataFrame({"id": test["id"], "crime_type": pred_labels})
 os.makedirs("../submission", exist_ok=True)
-submission.to_csv("../submission/submission.csv", index=False)
-print("✅ Baseline submission saved to submission/submission.csv")
+submission.to_csv("../submission/aayushi.csv", index=False)
+print("✅ Baseline submission saved to submission/aayushi.csv")
 print(submission)
