@@ -11,62 +11,49 @@ LEADERBOARD    = os.path.join(DOCS_DIR, "leaderboard.json")
 
 def load_ground_truth():
     df = pd.read_csv(GROUND_TRUTH)
-    return df.set_index("id")["Crime Description"]
+    return df.set_index("id")["crime_type"]
 
 def evaluate_submission(filepath, ground_truth):
     df = pd.read_csv(filepath)
-    if "id" not in df.columns or "Crime Description" not in df.columns:
-        return None, "Missing required columns: id, Crime Description"
-    
+    if "id" not in df.columns or "crime_type" not in df.columns:
+        return None, "Missing required columns: id, crime_type"
     df = df.set_index("id")
     aligned = df.reindex(ground_truth.index)
-    aligned = aligned.dropna(subset=["Crime Description"])
-    
+    aligned = aligned.dropna(subset=["crime_type"])
     if len(aligned) == 0:
         return None, "No matching IDs found"
-    
     gt_aligned = ground_truth.reindex(aligned.index)
-    acc = accuracy_score(gt_aligned, aligned["Crime Description"])
-    f1  = f1_score(gt_aligned, aligned["Crime Description"], average="weighted")
-    
+    acc = accuracy_score(gt_aligned, aligned["crime_type"])
+    f1  = f1_score(gt_aligned, aligned["crime_type"], average="weighted")
     return {"accuracy": round(acc, 4), "f1_score": round(f1, 4)}, None
 
 def run_grader():
     if not os.path.exists(GROUND_TRUTH):
         print("⚠️  Ground truth file not found.")
         return
-    
     ground_truth = load_ground_truth()
     results = []
-    
     for fname in os.listdir(SUBMISSION_DIR):
         if not fname.endswith(".csv") or fname in ("submission.csv", "results.csv"):
             continue
-        
         fpath = os.path.join(SUBMISSION_DIR, fname)
         name  = fname.replace(".csv", "")
         scores, error = evaluate_submission(fpath, ground_truth)
-        
         if error:
             print(f"❌ {name}: {error}")
             continue
-        
         scores["name"] = name
         scores["timestamp"] = datetime.utcnow().isoformat()
         results.append(scores)
         print(f"✅ {name} | Accuracy: {scores['accuracy']} | F1: {scores['f1_score']}")
-    
     if not results:
         print("No valid submissions found.")
         return
-    
     results.sort(key=lambda x: x["accuracy"], reverse=True)
-    
     os.makedirs(DOCS_DIR, exist_ok=True)
     with open(LEADERBOARD, "w") as f:
         json.dump(results, f, indent=2)
     print("✅ Leaderboard updated")
-    
     pd.DataFrame(results).to_csv(os.path.join(SUBMISSION_DIR, "results.csv"), index=False)
     print("✅ results.csv saved")
 
