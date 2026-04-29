@@ -1,21 +1,19 @@
 name: Evaluate Submission
 on:
-  pull_request:
+  push:
+    paths:
+      - 'submission/**'
     branches:
       - main
-    types: [opened, synchronize, reopened, closed]
 
 permissions:
   contents: write
 
 jobs:
   evaluate:
-    if: github.event.pull_request.merged == true || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - uses: actions/setup-python@v4
         with:
@@ -24,11 +22,6 @@ jobs:
       - name: Install dependencies
         run: pip install pandas scikit-learn
 
-      - name: Merge PR branch into checkout
-        run: |
-          git fetch origin ${{ github.head_ref }}
-          git checkout ${{ github.head_ref }}
-
       - name: Run evaluator
         run: python grader/evaluator.py
 
@@ -36,11 +29,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout main
-          git pull origin main
-          cp docs/leaderboard.json /tmp/leaderboard.json
-          git checkout main
-          cp /tmp/leaderboard.json docs/leaderboard.json
+          git pull --rebase origin main
           git add docs/leaderboard.json
           git add submission/results.csv || true
           git diff --cached --quiet || git commit -m "🤖 Update leaderboard"
